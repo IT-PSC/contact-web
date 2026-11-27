@@ -2,6 +2,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light only;
   --gold: #d4af37;
   --gold-soft: #f0d78c;
   --ink: #050505;
@@ -13,6 +14,10 @@
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  color-scheme: light only;
 }
 
 html,
@@ -43,9 +48,13 @@ a {
   text-decoration: none;
 }
 
+/* Keep namecard colors stable in QR / in-app browsers (no forced dark invert) */
 .namecard,
 .physical-card {
   animation: rise 0.55s ease both;
+  color-scheme: light only;
+  forced-color-adjust: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 @keyframes rise {
