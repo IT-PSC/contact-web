@@ -167,7 +167,7 @@ function BioText({ bio }: { bio: string }) {
   );
 }
 
-const TEMPLATE_BG = "/backgrounds/sandai template for namecard (1).png";
+const TEMPLATE_BG = "/backgrounds/sandai-namecard-template.jpg";
 
 export function NameCard({ employee, company, departmentName }: Props) {
   const [lang, setLang] = useState<Lang>("en");
