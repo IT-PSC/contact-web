@@ -230,15 +230,25 @@ export function NameCard({ employee, company, departmentName }: Props) {
   return (
     <article
       lang={lang === "zh" ? "zh" : lang}
-      className="namecard relative mx-auto w-full max-w-[430px] overflow-hidden rounded-[24px] text-white shadow-[0_28px_80px_rgba(0,0,0,0.55)]"
+      className="namecard relative mx-auto w-full max-w-[430px] overflow-hidden rounded-[24px] bg-[#f3f3f3] text-white shadow-[0_28px_80px_rgba(0,0,0,0.55)]"
+      style={{
+        backgroundImage: `url("${TEMPLATE_BG}")`,
+        backgroundSize: "100% 100%",
+        backgroundPosition: "center top",
+        backgroundRepeat: "no-repeat",
+      }}
     >
-      {/* Full-card template background */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
+      {/* Fallback img for WebViews that struggle with CSS background-image */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-0"
+      >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={TEMPLATE_BG}
           alt=""
           className="h-full w-full object-fill"
+          decoding="async"
         />
       </div>
 

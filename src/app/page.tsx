@@ -21,7 +21,7 @@ export default function HomePage() {
         . Profiles are managed in Contact Admin.
       </p>
       <Link
-        href="/card/bobby-tandy"
+        href="/card/bobby-tandy/digital"
         className="mt-8 inline-flex rounded-full bg-[linear-gradient(135deg,#F0D78C_0%,#D4AF37_50%,#A88720_100%)] px-6 py-3 text-sm font-bold text-black shadow-[0_12px_28px_rgba(212,175,55,0.3)]"
       >
         View sample card
