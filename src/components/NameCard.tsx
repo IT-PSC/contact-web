@@ -1,8 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { mediaUrl, vcardUrl } from "@/lib/api";
-import { ensureExternalHref } from "@/lib/links";
+import {
+  contactDisplayLabel,
+  contactHref,
+  resolveEmployeeContacts,
+} from "@/lib/contacts";
 import type { CompanySettings, Employee } from "@/lib/types";
 
 type Lang = "km" | "en" | "zh";
@@ -150,12 +154,14 @@ function BioText({ bio }: { bio: string }) {
   if (words.length === 0) return null;
 
   return (
-    <p className="mx-auto mt-4 max-w-[320px] text-[13px] leading-[1.7] text-[#333]">
+    <p className="mx-auto mt-3.5 max-w-[300px] px-2 text-[13px] leading-[1.75] text-[#2a2a2a]">
       {words.map((word, index) => (
         <span key={`${word}-${index}`}>
           <span
             className={
-              index % 3 === 1 ? "font-semibold text-[#C5A028]" : undefined
+              index % 3 === 1
+                ? "font-semibold text-[#C8962E]"
+                : "font-medium"
             }
           >
             {word}
@@ -164,6 +170,23 @@ function BioText({ bio }: { bio: string }) {
         </span>
       ))}
     </p>
+  );
+}
+
+/** Glass pill matching the design mockup (info + contact rows) */
+function GlassPill({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`flex items-center rounded-full border border-white/25 bg-[rgba(120,120,120,0.28)] px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-[6px] ${className}`}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -178,43 +201,11 @@ export function NameCard({ employee, company, departmentName }: Props) {
 
   const contacts = useMemo(
     () =>
-      [
-        employee.phone
-          ? {
-              type: "phone",
-              label: employee.phone,
-              href: ensureExternalHref(employee.phone, "phone"),
-            }
-          : null,
-        employee.telegram
-          ? {
-              type: "telegram",
-              label: employee.telegram,
-              href: ensureExternalHref(employee.telegram, "url"),
-            }
-          : null,
-        employee.facebook
-          ? {
-              type: "facebook",
-              label: employee.facebook,
-              href: ensureExternalHref(employee.facebook, "url"),
-            }
-          : null,
-        employee.tiktok
-          ? {
-              type: "tiktok",
-              label: employee.tiktok,
-              href: ensureExternalHref(employee.tiktok, "url"),
-            }
-          : null,
-        employee.linkedin
-          ? {
-              type: "linkedin",
-              label: employee.linkedin,
-              href: ensureExternalHref(employee.linkedin, "url"),
-            }
-          : null,
-      ].filter(Boolean) as { type: string; label: string; href: string }[],
+      resolveEmployeeContacts(employee).map((item) => ({
+        type: item.type,
+        label: contactDisplayLabel(item),
+        href: contactHref(item),
+      })),
     [employee],
   );
 
@@ -253,42 +244,59 @@ export function NameCard({ employee, company, departmentName }: Props) {
       </div>
 
       {/* Header — matches light topo hero layout */}
-      <section className="relative z-10 text-center text-[#111]">
+      <section className="relative z-10 px-5 pb-8 pt-8 text-center text-[#111]">
         {/* Soft center glow behind photo (like the mockup) */}
         <div
           aria-hidden
-          className="pointer-events-none absolute left-1/2 top-[42%] h-[280px] w-[280px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.95)_0%,rgba(255,255,255,0.35)_55%,transparent_75%)]"
+          className="pointer-events-none absolute left-1/2 top-[40%] h-[260px] w-[260px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.95)_0%,rgba(255,255,255,0.4)_50%,transparent_72%)]"
         />
 
-        <div className="relative mx-auto flex justify-center">
+        <div className="relative mx-auto mb-4 flex justify-center">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={logoSrc}
             alt={company.name}
-            className="h-[100px] w-[100px] object-contain"
+            className="h-[84px] w-[84px] object-contain"
           />
         </div>
 
-        <div className="relative mx-auto mb-6 h-[168px] w-[168px] overflow-hidden rounded-full border-[5px] border-[#D4AF37] bg-black shadow-[0_8px_28px_rgba(212,175,55,0.35)]">
-          {photoSrc ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={photoSrc}
-              alt={employee.name}
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(145deg,#2a2a2a,#D4AF37)] text-[40px] font-bold text-black">
-              {employee.name
-                .split(" ")
-                .slice(0, 2)
-                .map((part) => part[0]?.toUpperCase() ?? "")
-                .join("")}
+        {/* Thick metallic gold double-ring — colors from design image */}
+        <div
+          className="relative mx-auto mb-5 h-[152px] w-[152px] rounded-full p-[7px] shadow-[0_10px_28px_rgba(154,98,0,0.35)]"
+          style={{
+            background:
+              "linear-gradient(145deg, #F4C065 0%, #E7A933 22%, #CD9238 48%, #AD7F27 72%, #9A6200 100%)",
+          }}
+        >
+          <div
+            className="h-full w-full rounded-full p-[3px]"
+            style={{
+              background:
+                "linear-gradient(325deg, #E6A834 0%, #9A6200 42%, #CD9238 78%, #F4C065 100%)",
+            }}
+          >
+            <div className="h-full w-full overflow-hidden rounded-full bg-black ring-1 ring-[#9A6200]/45">
+              {photoSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={photoSrc}
+                  alt={employee.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(145deg,#2a2a2a,#D4AF37)] text-[36px] font-bold text-black">
+                  {employee.name
+                    .split(" ")
+                    .slice(0, 2)
+                    .map((part) => part[0]?.toUpperCase() ?? "")
+                    .join("")}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
-        <h1 className="relative text-[clamp(24px,6.2vw,30px)] font-extrabold leading-tight tracking-tight text-black">
+        <h1 className="relative text-[clamp(22px,5.8vw,28px)] font-extrabold leading-tight tracking-tight text-black">
           {`${t.hello} ${employee.name}.`}
         </h1>
         <div className="relative">
@@ -296,21 +304,18 @@ export function NameCard({ employee, company, departmentName }: Props) {
         </div>
       </section>
 
-      {/* Professional info — dark gold-framed zone */}
-      <section className="relative z-10 px-5 pb-10 pt-14">
-        <div className="space-y-3">
+      {/* Professional info — glass pills like design mockup */}
+      <section className="relative z-10 px-5 pb-12 pt-12">
+        <div className="space-y-2.5">
           {infoRows.map((row) => (
-            <div
-              key={row.label}
-              className="flex items-center gap-2 rounded-full border border-white/15 bg-[rgba(70,70,70,0.55)] px-4 py-3 backdrop-blur-[2px]"
-            >
-              <span className="shrink-0 text-[11px] font-semibold tracking-[0.08em] text-white/55">
+            <GlassPill key={row.label} className="justify-between gap-3">
+              <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/90">
                 {row.label}:
               </span>
-              <span className="min-w-0 flex-1 truncate text-right text-[14px] font-semibold text-white">
+              <span className="min-w-0 truncate text-right text-[14px] font-bold text-white">
                 {row.value}
               </span>
-            </div>
+            </GlassPill>
           ))}
         </div>
       </section>
@@ -328,9 +333,11 @@ export function NameCard({ employee, company, departmentName }: Props) {
 
         <div className="space-y-2.5">
           {contacts.length === 0 ? (
-            <p className="rounded-full border border-white/10 bg-white/5 px-4 py-3 text-center text-[13px] text-white/50">
-              No personal contacts yet
-            </p>
+            <GlassPill className="justify-center">
+              <span className="text-[13px] text-white/55">
+                No personal contacts yet
+              </span>
+            </GlassPill>
           ) : (
             contacts.map((item) => (
               <a
@@ -339,12 +346,12 @@ export function NameCard({ employee, company, departmentName }: Props) {
                 {...(item.type === "phone"
                   ? {}
                   : { target: "_blank", rel: "noreferrer" })}
-                className="flex items-center gap-3 rounded-full border border-white/12 bg-[rgba(80,80,80,0.45)] px-3 py-2.5 transition hover:border-[#D4AF37]/55 hover:bg-white/10"
+                className="flex items-center gap-3 rounded-full border border-white/25 bg-[rgba(120,120,120,0.28)] px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-[6px] transition hover:border-[#E7A933]/55 hover:bg-[rgba(140,140,140,0.35)]"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 bg-black/40">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/20 bg-black/45">
                   <ContactIcon type={item.type} />
                 </span>
-                <span className="truncate text-[13px] text-white/90">
+                <span className="truncate text-[13px] font-medium text-white">
                   {item.label}
                 </span>
               </a>
